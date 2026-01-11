@@ -122,8 +122,8 @@ rm -rf ~/Library/Developer/Xcode/DerivedData/*
 
 ## Tech Stack
 
-- **Expo SDK 54** - React Native framework
-- **React Native 0.81** - Mobile UI
+- **Expo SDK ** - React Native framework
+- **React Native ** - Mobile UI
 - **starknet.js** - Starknet interactions
 - **uniffi-bindgen-react-native** - Rust FFI bindings
 - **Cartridge Controller** - Session-based wallet integration
