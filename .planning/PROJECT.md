@@ -12,20 +12,20 @@ A working, functional reference app that demonstrates how to integrate Starknet 
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Expo project scaffolded with TypeScript, starknet.js, and Cartridge SDK — v1.0
+- ✓ Counter value displays on launch (read-only, no wallet required) — v1.0
+- ✓ Loading and error states for counter fetching — v1.0
+- ✓ Manual refresh button to re-fetch counter value — v1.0
+- ✓ Cartridge wallet connection flow with address display — v1.0
+- ✓ Increment counter (+1) via signed transaction — v1.0
+- ✓ Decrement counter (-1) via signed transaction — v1.0
+- ✓ Transaction status modal (pending → confirmed → failed states) — v1.0
+- ✓ Transaction hash display with Voyager explorer link — v1.0
+- ✓ Graceful error handling throughout — v1.0
 
 ### Active
 
-- [ ] Expo project scaffolded with TypeScript, starknet.js, and Cartridge SDK
-- [ ] Counter value displays on launch (read-only, no wallet required)
-- [ ] Loading and error states for counter fetching
-- [ ] Manual refresh button to re-fetch counter value
-- [ ] Cartridge wallet connection flow with address display
-- [ ] Increment counter (+1) via signed transaction
-- [ ] Decrement counter (-1) via signed transaction
-- [ ] Transaction status modal (pending → confirmed → failed states)
-- [ ] Transaction hash display with Voyager explorer link
-- [ ] Graceful error handling throughout
+(None — v1.0 MVP complete)
 
 ### Out of Scope
 
@@ -76,10 +76,27 @@ A working, functional reference app that demonstrates how to integrate Starknet 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| iOS only | Scope reduction for reference app | — Pending |
-| Cartridge wallet only | Confirmed React Native compatible | — Pending |
-| Session-only wallet connection | Simplifies implementation | — Pending |
-| Fixed increment/decrement of 1 | Simpler UI (just +/- buttons) | — Pending |
+| iOS only | Scope reduction for reference app | ✓ Good |
+| Cartridge wallet only | Confirmed React Native compatible | ✓ Good |
+| Session-based auth over @cartridge/controller | Web SDK incompatible with RN, uses browser-only APIs | ✓ Good |
+| react-native-get-random-values for polyfills | Simpler than react-native-quick-crypto, no native compilation | ✓ Good |
+| starknet.js v9 API syntax | Object parameters for Contract and Account constructors | ✓ Good |
+| Unicode symbols for modal icons | Avoids external icon library dependency | ✓ Good |
+| Fixed increment/decrement of 1 | Simpler UI (just +/- buttons) | ✓ Good |
+
+## Current State
+
+**Version:** v1.0 MVP (shipped 2026-01-12)
+
+**Tech Stack:**
+- Expo SDK 54 with TypeScript
+- starknet.js v9 for provider and contract interactions
+- Session-based Cartridge wallet authentication
+- React Native 0.81.5 with Metro bundler
+
+**Codebase:** 1,237 lines of TypeScript across 86 files
+
+**Status:** Reference app complete — demonstrates Starknet + React Native + Cartridge integration patterns
 
 ---
-*Last updated: 2026-01-11 after initialization*
+*Last updated: 2026-01-12 after v1.0 milestone*
