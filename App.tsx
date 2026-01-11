@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Text,
   View,
@@ -9,6 +9,7 @@ import {
 import { getCounterValue } from './src/config/starknet';
 import { useSessionManager } from './src/hooks/useSessionManager';
 import { CONTRACT_ADDRESS } from './src/config/constants';
+import { TransactionModal, TransactionStatus } from './src/components/TransactionModal';
 
 const truncateAddress = (addr: string) =>
   `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -18,8 +19,10 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { address, isConnecting, error: walletError, connect, disconnect, isConnected, executeTransaction } = useSessionManager();
-  const [txPending, setTxPending] = useState(false);
+  const [txStatus, setTxStatus] = useState<TransactionStatus>('idle');
+  const [txHash, setTxHash] = useState<string | null>(null);
   const [txError, setTxError] = useState<string | null>(null);
+  const lastMethodRef = useRef<'increase_counter' | 'decrease_counter' | null>(null);
 
   const fetchCounter = async () => {
     setLoading(true);
@@ -35,15 +38,30 @@ export default function App() {
   };
 
   const handleTransaction = async (method: 'increase_counter' | 'decrease_counter') => {
-    setTxPending(true);
+    lastMethodRef.current = method;
+    setTxStatus('pending');
+    setTxHash(null);
     setTxError(null);
     try {
-      await executeTransaction(CONTRACT_ADDRESS, method, ['0x1']);
+      const hash = await executeTransaction(CONTRACT_ADDRESS, method, ['0x1']);
+      setTxHash(hash);
+      setTxStatus('success');
       await fetchCounter();
     } catch (err) {
       setTxError(err instanceof Error ? err.message : 'Transaction failed');
-    } finally {
-      setTxPending(false);
+      setTxStatus('error');
+    }
+  };
+
+  const handleDismissModal = () => {
+    setTxStatus('idle');
+    setTxHash(null);
+    setTxError(null);
+  };
+
+  const handleRetry = () => {
+    if (lastMethodRef.current) {
+      handleTransaction(lastMethodRef.current);
     }
   };
 
@@ -96,10 +114,10 @@ export default function App() {
           style={[
             styles.actionButton,
             styles.decrementButton,
-            (!isConnected || txPending || loading) && styles.buttonDisabled,
+            (!isConnected || txStatus !== 'idle' || loading) && styles.buttonDisabled,
           ]}
           onPress={() => handleTransaction('decrease_counter')}
-          disabled={!isConnected || txPending || loading}
+          disabled={!isConnected || txStatus !== 'idle' || loading}
         >
           <Text style={styles.actionButtonText}>-</Text>
         </TouchableOpacity>
@@ -107,26 +125,28 @@ export default function App() {
           style={[
             styles.actionButton,
             styles.incrementButton,
-            (!isConnected || txPending || loading) && styles.buttonDisabled,
+            (!isConnected || txStatus !== 'idle' || loading) && styles.buttonDisabled,
           ]}
           onPress={() => handleTransaction('increase_counter')}
-          disabled={!isConnected || txPending || loading}
+          disabled={!isConnected || txStatus !== 'idle' || loading}
         >
           <Text style={styles.actionButtonText}>+</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Transaction Status */}
-      {txPending && (
-        <View style={styles.txStatus}>
-          <ActivityIndicator size="small" color="#0066cc" />
-          <Text style={styles.txStatusText}>Transaction pending...</Text>
-        </View>
-      )}
-      {txError && <Text style={styles.txError}>{txError}</Text>}
       {!isConnected && (
         <Text style={styles.hintText}>Connect wallet to modify counter</Text>
       )}
+
+      {/* Transaction Modal */}
+      <TransactionModal
+        visible={txStatus !== 'idle'}
+        status={txStatus}
+        txHash={txHash}
+        error={txError}
+        onDismiss={handleDismissModal}
+        onRetry={handleRetry}
+      />
 
       <TouchableOpacity
         style={styles.refreshButton}
@@ -246,22 +266,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 32,
     fontWeight: 'bold',
-  },
-  txStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  txStatusText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  txError: {
-    color: 'red',
-    fontSize: 14,
-    marginBottom: 10,
-    textAlign: 'center',
   },
   hintText: {
     color: '#999',
