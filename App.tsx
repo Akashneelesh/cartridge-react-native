@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',
+    maxWidth: 250,
   },
   connectedContainer: {
     alignItems: 'center',
