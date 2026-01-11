@@ -9,10 +9,12 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@cartridge/controller": "^0.12.1",
     "expo": "~54.0.31",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "starknet": "^9.2.1"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
