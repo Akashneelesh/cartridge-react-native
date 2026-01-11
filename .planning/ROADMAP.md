@@ -17,7 +17,7 @@ None
 - [x] **Phase 1: Foundation** *(Complete 2026-01-11)* - Expo project setup with TypeScript, starknet.js, and crypto polyfills
 - [x] **Phase 2: Counter Read** *(Complete 2026-01-11)* - Display counter value from contract (read-only, no wallet)
 - [x] **Phase 3: Wallet Connection** *(Complete 2026-01-11)* - Cartridge wallet integration with address display
-- [ ] **Phase 4: Counter Write** - Increment/decrement transactions with wallet signing
+- [x] **Phase 4: Counter Write** *(Complete 2026-01-11)* - Increment/decrement transactions with wallet signing
 - [ ] **Phase 5: Polish** - Transaction status modal, explorer links, error handling
 
 ## Phase Details
@@ -58,11 +58,10 @@ Plans:
 **Goal**: Increment and decrement counter via signed transactions
 **Depends on**: Phase 3
 **Research**: Unlikely (builds on Phase 2-3 patterns)
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 04-01: Transaction signing and execution
-- [ ] 04-02: Increment/decrement buttons with feedback
+- [x] 04-01: Transaction signing with increment/decrement buttons *(2026-01-11)*
 
 ### Phase 5: Polish
 **Goal**: Transaction status modal, Voyager explorer links, graceful error handling throughout
@@ -84,5 +83,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 2/2 | Complete | 2026-01-11 |
 | 2. Counter Read | 1/1 | Complete | 2026-01-11 |
 | 3. Wallet Connection | 2/2 | Complete | 2026-01-11 |
-| 4. Counter Write | 0/2 | Not started | - |
+| 4. Counter Write | 1/1 | Complete | 2026-01-11 |
 | 5. Polish | 0/2 | Not started | - |

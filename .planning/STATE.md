@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-11)
 
 **Core value:** A working, functional reference app that demonstrates how to integrate Starknet blockchain interactions with React Native/Expo and Cartridge wallet.
-**Current focus:** Phase 3 — Wallet Connection (complete)
+**Current focus:** Phase 4 — Counter Write (complete)
 
 ## Current Position
 
-Phase: 3 of 5 (Wallet Connection)
-Plan: 2 of 2 in current phase
+Phase: 4 of 5 (Counter Write)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-11 — Completed 03-02-PLAN.md
+Last activity: 2026-01-11 — Completed 04-01-PLAN.md
 
-Progress: ██████░░░░ 60%
+Progress: ████████░░ 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 11 min
-- Total execution time: 57 min
+- Total plans completed: 6
+- Average duration: 10 min
+- Total execution time: 62 min
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: ██████░░░░ 60%
 | 1 | 2 | 7m | 3.5m |
 | 2 | 1 | 2m | 2m |
 | 3 | 2 | 48m | 24m |
+| 4 | 1 | 5m | 5m |
 
 **Recent Trend:**
-- Last 5 plans: 4m, 3m, 2m, 3m, 45m
-- Trend: Phase 3 required extensive debugging for RN compatibility
+- Last 5 plans: 3m, 2m, 3m, 45m, 5m
+- Trend: Phase 4 executed smoothly, building on established patterns
 
 ## Accumulated Context
 
@@ -50,6 +51,7 @@ Recent decisions affecting current work:
 | 03-01 | Use rpcUrl property for Controller | API requires rpcUrl not rpc |
 | 03-02 | Session-based auth over @cartridge/controller | Web SDK incompatible with RN, uses browser-only APIs |
 | 03-02 | Use ec.starkCurve.utils.randomPrivateKey() | Proper Stark key generation for Cartridge compatibility |
+| 04-01 | Use starknet.js v9 Account object constructor | Object params {provider, address, signer} for v9 API |
 
 ### Deferred Issues
 
@@ -61,6 +63,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-11T20:15:00Z
-Stopped at: Completed 03-02-PLAN.md (Phase 3 complete)
+Last session: 2026-01-11T20:23:00Z
+Stopped at: Completed 04-01-PLAN.md (Phase 4 complete)
 Resume file: None
