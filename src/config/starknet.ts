@@ -1,17 +1,14 @@
 import { RpcProvider, Contract, constants } from 'starknet';
 import { COUNTER_ABI } from '../types/counter';
+import { CONTRACT_ADDRESS, RPC_URL } from './constants';
 
-// RPC URL for Cartridge session
-export const RPC_URL = 'https://api.cartridge.gg/x/starknet/sepolia';
+// Re-export for backwards compatibility
+export { CONTRACT_ADDRESS, RPC_URL };
 
 // Starknet Sepolia provider
 const provider = new RpcProvider({
   nodeUrl: constants.NetworkName.SN_SEPOLIA,
 });
-
-// Counter contract address on Sepolia
-export const CONTRACT_ADDRESS =
-  '0x075410d36a0690670137c3d15c01fcfa2ce094a4d0791dc769ef18c1c423a7f8';
 
 // Get contract instance for read-only operations
 export function getCounterContract(): Contract {
