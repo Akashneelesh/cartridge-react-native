@@ -7,11 +7,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { getCounterValue } from './src/config/starknet';
+import { useWallet } from './src/hooks/useWallet';
+
+const truncateAddress = (addr: string) =>
+  `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
 export default function App() {
   const [counter, setCounter] = useState<bigint | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { address, isConnecting, error: walletError, connect, disconnect, isConnected } = useWallet();
 
   const fetchCounter = async () => {
     setLoading(true);
@@ -32,6 +37,33 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      {/* Wallet Section */}
+      <View style={styles.walletSection}>
+        {!isConnected ? (
+          <>
+            <TouchableOpacity
+              style={[styles.walletButton, isConnecting && styles.buttonDisabled]}
+              onPress={connect}
+              disabled={isConnecting}
+            >
+              {isConnecting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.walletButtonText}>Connect Wallet</Text>
+              )}
+            </TouchableOpacity>
+            {walletError && <Text style={styles.walletError}>{walletError}</Text>}
+          </>
+        ) : (
+          <View style={styles.connectedContainer}>
+            <Text style={styles.addressText}>{truncateAddress(address!)}</Text>
+            <TouchableOpacity style={styles.disconnectButton} onPress={disconnect}>
+              <Text style={styles.disconnectText}>Disconnect</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
       <Text style={styles.title}>Starknet Counter</Text>
 
       {loading && <ActivityIndicator size="large" color="#0066cc" />}
@@ -59,6 +91,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  walletSection: {
+    position: 'absolute',
+    top: 60,
+    alignItems: 'center',
+  },
+  walletButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#0066cc',
+    borderRadius: 8,
+    minWidth: 140,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  walletButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  walletError: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  connectedContainer: {
+    alignItems: 'center',
+  },
+  addressText: {
+    fontSize: 14,
+    fontFamily: 'Courier',
+    color: '#333',
+    marginBottom: 8,
+  },
+  disconnectButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    backgroundColor: '#dc3545',
+    borderRadius: 6,
+  },
+  disconnectText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   title: {
     fontSize: 24,
