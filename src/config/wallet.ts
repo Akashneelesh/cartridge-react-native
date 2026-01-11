@@ -1,9 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import * as AuthSession from 'expo-auth-session';
 import { ec } from 'starknet';
-import { RPC_URL } from './starknet';
+import { RPC_URL, CONTRACT_ADDRESS } from './starknet';
 
 // Warm up the browser for faster auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -16,12 +15,13 @@ const KEYCHAIN_URL = 'https://x.cartridge.gg';
 const APP_SCHEME = 'counterapp';
 
 // Session policies for counter contract interactions
-// Note: Simplified format without target - Cartridge session expects just method names
 export const policies = [
   {
+    target: CONTRACT_ADDRESS,
     method: 'increase_counter',
   },
   {
+    target: CONTRACT_ADDRESS,
     method: 'decrease_counter',
   },
 ];
@@ -60,6 +60,7 @@ export function getPublicKey(privateKey: string): string {
 // Build the session authorization URL
 export function buildSessionUrl(publicKey: string, redirectUri: string): string {
   const policiesJson = policies.map(policy => ({
+    target: policy.target,
     method: policy.method,
   }));
 
@@ -175,13 +176,10 @@ export async function openSessionAuthorization(): Promise<{ address: string; use
 
     console.log('Generated public key:', publicKey);
 
-    // Create redirect URI using AuthSession for better platform support
-    // This uses the deprecated auth proxy for Expo Go compatibility
-    // For production, use a development build with custom scheme
-    const redirectUri = AuthSession.makeRedirectUri({
-      scheme: APP_SCHEME,
-      path: 'session',
-    });
+    // Create redirect URI using expo-linking
+    // In Expo Go, this returns exp://... format
+    // In development builds, use custom scheme
+    const redirectUri = Linking.createURL('session');
 
     console.log('Redirect URI:', redirectUri);
 
