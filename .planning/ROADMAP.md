@@ -15,7 +15,7 @@ None
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation** *(Complete 2026-01-11)* - Expo project setup with TypeScript, starknet.js, and crypto polyfills
-- [ ] **Phase 2: Counter Read** - Display counter value from contract (read-only, no wallet)
+- [x] **Phase 2: Counter Read** *(Complete 2026-01-11)* - Display counter value from contract (read-only, no wallet)
 - [ ] **Phase 3: Wallet Connection** - Cartridge wallet integration with address display
 - [ ] **Phase 4: Counter Write** - Increment/decrement transactions with wallet signing
 - [ ] **Phase 5: Polish** - Transaction status modal, explorer links, error handling
@@ -41,8 +41,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 02-01: Starknet provider and contract setup
-- [ ] 02-02: Counter display UI with states
+- [x] 02-01: Starknet provider, contract setup, and counter display UI *(2026-01-11)*
 
 ### Phase 3: Wallet Connection
 **Goal**: Cartridge wallet connection flow with address display in UI
@@ -83,7 +82,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-11 |
-| 2. Counter Read | 0/2 | Not started | - |
+| 2. Counter Read | 1/1 | Complete | 2026-01-11 |
 | 3. Wallet Connection | 0/2 | Not started | - |
 | 4. Counter Write | 0/2 | Not started | - |
 | 5. Polish | 0/2 | Not started | - |
