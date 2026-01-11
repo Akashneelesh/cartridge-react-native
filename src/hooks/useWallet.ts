@@ -1,5 +1,9 @@
-import { useState, useCallback } from 'react';
-import { controller } from '../config/wallet';
+import { useState, useCallback, useEffect } from 'react';
+import {
+  openSessionAuthorization,
+  getStoredSession,
+  clearSession,
+} from '../config/wallet';
 
 interface WalletState {
   address: string | null;
@@ -14,14 +18,34 @@ export function useWallet() {
     error: null,
   });
 
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        const session = await getStoredSession();
+        if (session?.address) {
+          setState({
+            address: session.address,
+            isConnecting: false,
+            error: null,
+          });
+        }
+      } catch (err) {
+        console.error('Error checking session:', err);
+      }
+    };
+    checkExistingSession();
+  }, []);
+
   const connect = useCallback(async () => {
     setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      const account = await controller.connect();
-      if (account) {
+      const result = await openSessionAuthorization();
+
+      if (result?.address) {
         setState({
-          address: account.address,
+          address: result.address,
           isConnecting: false,
           error: null,
         });
@@ -29,7 +53,7 @@ export function useWallet() {
         setState((prev) => ({
           ...prev,
           isConnecting: false,
-          error: 'Connection cancelled',
+          error: 'Connection cancelled or no address returned',
         }));
       }
     } catch (err) {
@@ -44,19 +68,15 @@ export function useWallet() {
 
   const disconnect = useCallback(async () => {
     try {
-      await controller.disconnect();
-      setState({
-        address: null,
-        isConnecting: false,
-        error: null,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Disconnect failed';
-      setState((prev) => ({
-        ...prev,
-        error: message,
-      }));
+      await clearSession();
+    } catch {
+      // Ignore disconnect errors
     }
+    setState({
+      address: null,
+      isConnecting: false,
+      error: null,
+    });
   }, []);
 
   return {

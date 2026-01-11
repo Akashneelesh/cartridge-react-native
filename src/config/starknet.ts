@@ -1,6 +1,9 @@
 import { RpcProvider, Contract, constants } from 'starknet';
 import { COUNTER_ABI } from '../types/counter';
 
+// RPC URL for Cartridge session
+export const RPC_URL = 'https://api.cartridge.gg/x/starknet/sepolia';
+
 // Starknet Sepolia provider
 const provider = new RpcProvider({
   nodeUrl: constants.NetworkName.SN_SEPOLIA,
