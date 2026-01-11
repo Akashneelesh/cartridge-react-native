@@ -215,7 +215,7 @@ export async function saveSession(address: string): Promise<void> {
 }
 
 // Get stored session data
-export async function getStoredSession(): Promise<{ address: string } | null> {
+export async function getStoredSession(): Promise<{ address: string; privateKey?: string } | null> {
   try {
     const data = await AsyncStorage.getItem(SESSION_STORAGE_KEY);
     if (data) {
