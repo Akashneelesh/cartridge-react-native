@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { getCounterValue, executeCounterTransaction } from './src/config/starknet';
+import { getCounterValue } from './src/config/starknet';
 import { useWallet } from './src/hooks/useWallet';
 
 const truncateAddress = (addr: string) =>
@@ -16,8 +16,6 @@ export default function App() {
   const [counter, setCounter] = useState<bigint | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [txPending, setTxPending] = useState(false);
-  const [txError, setTxError] = useState<string | null>(null);
   const { address, isConnecting, error: walletError, connect, disconnect, isConnected } = useWallet();
 
   const fetchCounter = async () => {
@@ -36,19 +34,6 @@ export default function App() {
   useEffect(() => {
     fetchCounter();
   }, []);
-
-  const handleTransaction = async (method: 'increase_counter' | 'decrease_counter') => {
-    setTxPending(true);
-    setTxError(null);
-    try {
-      await executeCounterTransaction(method);
-      await fetchCounter();
-    } catch (err) {
-      setTxError(err instanceof Error ? err.message : 'Transaction failed');
-    } finally {
-      setTxPending(false);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -87,46 +72,6 @@ export default function App() {
 
       {!loading && !error && counter !== null && (
         <Text style={styles.counter}>{counter.toString()}</Text>
-      )}
-
-      {/* Increment/Decrement Buttons */}
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            styles.decrementButton,
-            (!isConnected || txPending || loading) && styles.actionButtonDisabled,
-          ]}
-          onPress={() => handleTransaction('decrease_counter')}
-          disabled={!isConnected || txPending || loading}
-        >
-          <Text style={styles.actionButtonText}>-</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            styles.incrementButton,
-            (!isConnected || txPending || loading) && styles.actionButtonDisabled,
-          ]}
-          onPress={() => handleTransaction('increase_counter')}
-          disabled={!isConnected || txPending || loading}
-        >
-          <Text style={styles.actionButtonText}>+</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Transaction Status */}
-      {txPending && (
-        <View style={styles.txStatus}>
-          <ActivityIndicator size="small" color="#0066cc" />
-          <Text style={styles.txStatusText}>Transaction pending...</Text>
-        </View>
-      )}
-
-      {txError && <Text style={styles.txError}>{txError}</Text>}
-
-      {!isConnected && (
-        <Text style={styles.hintText}>Connect wallet to modify counter</Text>
       )}
 
       <TouchableOpacity
@@ -224,53 +169,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 20,
-    marginVertical: 20,
-  },
-  actionButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionButtonDisabled: {
-    opacity: 0.4,
-  },
-  decrementButton: {
-    backgroundColor: '#dc3545',
-  },
-  incrementButton: {
-    backgroundColor: '#28a745',
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  txStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  txStatusText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  txError: {
-    color: 'red',
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 10,
-    maxWidth: 250,
-  },
-  hintText: {
-    color: '#999',
-    fontSize: 12,
-    marginBottom: 10,
   },
 });
