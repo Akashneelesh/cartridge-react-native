@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import { ec, stark } from 'starknet';
-import { CONTRACT_ADDRESS, RPC_URL } from './starknet';
+import * as AuthSession from 'expo-auth-session';
+import { ec } from 'starknet';
+import { RPC_URL } from './starknet';
 
 // Warm up the browser for faster auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -11,23 +12,23 @@ const PRIVATE_KEY_STORAGE_KEY = 'cartridge_session_private_key';
 const SESSION_STORAGE_KEY = 'cartridge_session_data';
 const KEYCHAIN_URL = 'https://x.cartridge.gg';
 
+// App scheme from app.json
+const APP_SCHEME = 'counterapp';
+
 // Session policies for counter contract interactions
+// Note: Simplified format without target - Cartridge session expects just method names
 export const policies = [
   {
-    target: CONTRACT_ADDRESS,
     method: 'increase_counter',
   },
   {
-    target: CONTRACT_ADDRESS,
     method: 'decrease_counter',
   },
 ];
 
 // Generate a valid Stark private key using starknet.js
 function generateRandomKey(): string {
-  // Use the proper method to generate a random private key for Stark curve
   const privateKey = ec.starkCurve.utils.randomPrivateKey();
-  // Convert Uint8Array to hex string
   return '0x' + Array.from(privateKey).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
@@ -35,13 +36,10 @@ function generateRandomKey(): string {
 export async function getOrCreatePrivateKey(): Promise<string> {
   let privateKey = await AsyncStorage.getItem(PRIVATE_KEY_STORAGE_KEY);
 
-  // Validate existing key or generate new one
   if (privateKey) {
     try {
-      // Test if key is valid by trying to derive public key
       ec.starkCurve.getStarkKey(privateKey);
     } catch {
-      // Invalid key, regenerate
       privateKey = null;
     }
   }
@@ -54,15 +52,14 @@ export async function getOrCreatePrivateKey(): Promise<string> {
   return privateKey;
 }
 
-// Derive public key from private key using starknet.js
+// Derive public key from private key
 export function getPublicKey(privateKey: string): string {
   return ec.starkCurve.getStarkKey(privateKey);
 }
 
-// Build the session authorization URL (matching Cartridge's expected format)
+// Build the session authorization URL
 export function buildSessionUrl(publicKey: string, redirectUri: string): string {
   const policiesJson = policies.map(policy => ({
-    target: policy.target,
     method: policy.method,
   }));
 
@@ -76,16 +73,12 @@ export function buildSessionUrl(publicKey: string, redirectUri: string): string 
   return `${KEYCHAIN_URL}/session?${params.toString()}`;
 }
 
-// Decode base64 string (works in React Native)
+// Decode base64 string (React Native compatible)
 function decodeBase64(base64: string): string {
-  // Use atob if available, otherwise use Buffer-like approach
   try {
-    // React Native doesn't have atob, so we use a manual decode
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
     let output = '';
     let i = 0;
-
-    // Remove any characters that are not in the base64 characters list
     const input = base64.replace(/[^A-Za-z0-9+/=]/g, '');
 
     while (i < input.length) {
@@ -109,7 +102,70 @@ function decodeBase64(base64: string): string {
   }
 }
 
+// Parse session data from callback URL
+export function parseSessionFromUrl(url: string): { address: string; username?: string } | null {
+  try {
+    const parsed = Linking.parse(url);
+    console.log('Parsing URL:', url);
+    console.log('Parsed URL params:', JSON.stringify(parsed.queryParams));
+
+    // Check for session parameter (base64-encoded JSON)
+    const sessionParam = parsed.queryParams?.session;
+    if (sessionParam && typeof sessionParam === 'string') {
+      try {
+        const decoded = decodeBase64(sessionParam);
+        console.log('Decoded session:', decoded);
+
+        const jsonMatch = decoded.match(/\{.*\}/);
+        if (!jsonMatch) {
+          throw new Error('No JSON object found in decoded session');
+        }
+
+        const sessionData = JSON.parse(jsonMatch[0]);
+        console.log('Session data:', JSON.stringify(sessionData, null, 2));
+
+        if (sessionData.address) {
+          return {
+            address: sessionData.address,
+            username: sessionData.username,
+          };
+        }
+      } catch (parseError) {
+        console.error('Failed to parse session data:', parseError);
+      }
+    }
+
+    // Fallback: try direct address parameter
+    const address = parsed.queryParams?.address;
+    if (address && typeof address === 'string') {
+      return { address };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error parsing session URL:', error);
+    return null;
+  }
+}
+
+// Store session after successful authorization
+export async function storeSessionData(
+  sessionResult: { address: string; username?: string },
+  publicKey: string,
+  privateKey: string
+): Promise<void> {
+  await AsyncStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+    address: sessionResult.address,
+    username: sessionResult.username,
+    publicKey,
+    privateKey,
+    timestamp: Date.now(),
+  }));
+}
+
 // Open browser for session authorization
+// NOTE: Expo Go has limited support for custom URL scheme redirects.
+// For full functionality, use a development build: npx expo run:ios
 export async function openSessionAuthorization(): Promise<{ address: string; username?: string } | null> {
   console.log('Starting session authorization...');
 
@@ -119,79 +175,50 @@ export async function openSessionAuthorization(): Promise<{ address: string; use
 
     console.log('Generated public key:', publicKey);
 
-    // Create redirect URI using expo-linking
-    const redirectUri = Linking.createURL('session');
+    // Create redirect URI using AuthSession for better platform support
+    // This uses the deprecated auth proxy for Expo Go compatibility
+    // For production, use a development build with custom scheme
+    const redirectUri = AuthSession.makeRedirectUri({
+      scheme: APP_SCHEME,
+      path: 'session',
+    });
 
-    const sessionUrl = buildSessionUrl(publicKey, redirectUri);
-
-    console.log('Opening session URL:', sessionUrl);
     console.log('Redirect URI:', redirectUri);
 
-    // Use openAuthSessionAsync to handle the redirect
-    // preferEphemeralSession gives us a clean browser without cached cookies
-    const result = await WebBrowser.openAuthSessionAsync(sessionUrl, redirectUri, {
-      preferEphemeralSession: true,
-    });
+    // Check if we're in Expo Go (exp:// scheme)
+    const isExpoGo = redirectUri.startsWith('exp://');
+    console.log('Is Expo Go:', isExpoGo);
+
+    if (isExpoGo) {
+      console.warn(
+        'Running in Expo Go. Custom URL scheme redirects may not work properly. ' +
+        'For full functionality, use a development build: npx expo run:ios'
+      );
+    }
+
+    const sessionUrl = buildSessionUrl(publicKey, redirectUri);
+    console.log('Opening session URL:', sessionUrl);
+
+    // Use openAuthSessionAsync for OAuth/auth flows
+    // On iOS, this uses ASWebAuthenticationSession which handles redirects
+    const result = await WebBrowser.openAuthSessionAsync(sessionUrl, redirectUri);
 
     console.log('Auth result type:', result.type);
 
     if (result.type === 'success' && result.url) {
       console.log('Callback URL:', result.url);
 
-      // Parse the callback URL
-      const url = Linking.parse(result.url);
-
-      // Check for session parameter (base64-encoded JSON)
-      const sessionParam = url.queryParams?.session;
-      if (sessionParam && typeof sessionParam === 'string') {
-        try {
-          const decoded = decodeBase64(sessionParam);
-          console.log('Decoded session:', decoded);
-
-          // Extract just the JSON part (in case of trailing characters)
-          const jsonMatch = decoded.match(/\{.*\}/);
-          if (!jsonMatch) {
-            throw new Error('No JSON object found in decoded session');
-          }
-
-          const sessionData = JSON.parse(jsonMatch[0]);
-          console.log('Session data:', JSON.stringify(sessionData, null, 2));
-
-          if (sessionData.address) {
-            // Store session data
-            await AsyncStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
-              address: sessionData.address,
-              username: sessionData.username,
-              ownerGuid: sessionData.ownerGuid,
-              expiresAt: sessionData.expiresAt,
-              publicKey,
-              privateKey,
-              timestamp: Date.now(),
-            }));
-
-            return {
-              address: sessionData.address,
-              username: sessionData.username,
-            };
-          }
-        } catch (parseError) {
-          console.error('Failed to parse session data:', parseError);
-        }
-      }
-
-      // Fallback: try direct address parameter
-      const address = url.queryParams?.address;
-      if (address && typeof address === 'string') {
-        await AsyncStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
-          address,
-          publicKey,
-          privateKey,
-          timestamp: Date.now(),
-        }));
-        return { address };
+      const sessionResult = parseSessionFromUrl(result.url);
+      if (sessionResult) {
+        await storeSessionData(sessionResult, publicKey, privateKey);
+        return sessionResult;
       }
 
       console.log('No address found in callback');
+    } else if (result.type === 'cancel') {
+      console.log('Auth was cancelled by user');
+    } else if (result.type === 'dismiss') {
+      console.log('Auth was dismissed');
     }
 
     return null;
