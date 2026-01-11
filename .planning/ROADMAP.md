@@ -51,7 +51,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: Cartridge controller integration
+- [x] 03-01: Cartridge controller integration *(2026-01-11)*
 - [ ] 03-02: Wallet UI (connect button, address display)
 
 ### Phase 4: Counter Write
@@ -83,6 +83,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete | 2026-01-11 |
 | 2. Counter Read | 1/1 | Complete | 2026-01-11 |
-| 3. Wallet Connection | 0/2 | Not started | - |
+| 3. Wallet Connection | 1/2 | In progress | - |
 | 4. Counter Write | 0/2 | Not started | - |
 | 5. Polish | 0/2 | Not started | - |
