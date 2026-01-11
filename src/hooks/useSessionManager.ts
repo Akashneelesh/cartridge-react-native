@@ -5,6 +5,7 @@ import 'react-native-get-random-values';
 import Controller, { SessionAccount, type SessionAccountInterface, type SessionPolicy, type Call } from '../../modules/controller/src';
 import { ec } from 'starknet';
 import { CONTRACT_ADDRESS, RPC_URL } from '../config/constants';
+import { getUserFriendlyError } from '../utils/errorMessages';
 
 const KEYCHAIN_URL = 'https://x.cartridge.gg';
 const CARTRIDGE_API_URL = 'https://api.cartridge.gg';
@@ -190,7 +191,7 @@ export function useSessionManager() {
       setState(prev => ({
         ...prev,
         isConnecting: false,
-        error: error instanceof Error ? error.message : 'Connection failed',
+        error: getUserFriendlyError(error, 'wallet'),
       }));
     }
   }, []);

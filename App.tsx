@@ -10,6 +10,7 @@ import { getCounterValue } from './src/config/starknet';
 import { useSessionManager } from './src/hooks/useSessionManager';
 import { CONTRACT_ADDRESS } from './src/config/constants';
 import { TransactionModal, TransactionStatus } from './src/components/TransactionModal';
+import { getUserFriendlyError } from './src/utils/errorMessages';
 
 const truncateAddress = (addr: string) =>
   `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -31,7 +32,7 @@ export default function App() {
       const value = await getCounterValue();
       setCounter(value);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch counter');
+      setError(getUserFriendlyError(err, 'counter'));
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ export default function App() {
       setTxStatus('success');
       await fetchCounter();
     } catch (err) {
-      setTxError(err instanceof Error ? err.message : 'Transaction failed');
+      setTxError(getUserFriendlyError(err, 'transaction'));
       setTxStatus('error');
     }
   };
@@ -102,7 +103,12 @@ export default function App() {
 
       {loading && <ActivityIndicator size="large" color="#0066cc" />}
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.error}>{error}</Text>
+          <Text style={styles.errorHint}>Tap Refresh to try again</Text>
+        </View>
+      )}
 
       {!loading && !error && counter !== null && (
         <Text style={styles.counter}>{counter.toString()}</Text>
@@ -225,12 +231,20 @@ const styles = StyleSheet.create({
     color: '#0066cc',
     marginVertical: 20,
   },
+  errorContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
   error: {
     color: 'red',
     fontSize: 16,
     textAlign: 'center',
     marginHorizontal: 20,
-    marginVertical: 20,
+  },
+  errorHint: {
+    color: '#999',
+    fontSize: 13,
+    marginTop: 6,
   },
   refreshButton: {
     marginTop: 20,
