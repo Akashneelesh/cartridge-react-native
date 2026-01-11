@@ -6,8 +6,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { getCounterValue, executeCounterTransaction } from './src/config/starknet';
-import { useWallet } from './src/hooks/useWallet';
+import { getCounterValue } from './src/config/starknet';
+import { useSessionManager } from './src/hooks/useSessionManager';
+import { CONTRACT_ADDRESS } from './src/config/constants';
 
 const truncateAddress = (addr: string) =>
   `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -16,7 +17,7 @@ export default function App() {
   const [counter, setCounter] = useState<bigint | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { address, isConnecting, error: walletError, connect, disconnect, isConnected } = useWallet();
+  const { address, isConnecting, error: walletError, connect, disconnect, isConnected, executeTransaction } = useSessionManager();
   const [txPending, setTxPending] = useState(false);
   const [txError, setTxError] = useState<string | null>(null);
 
@@ -37,7 +38,7 @@ export default function App() {
     setTxPending(true);
     setTxError(null);
     try {
-      await executeCounterTransaction(method);
+      await executeTransaction(CONTRACT_ADDRESS, method, ['0x1']);
       await fetchCounter();
     } catch (err) {
       setTxError(err instanceof Error ? err.message : 'Transaction failed');

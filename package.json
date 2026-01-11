@@ -3,16 +3,16 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "prebuild": "expo prebuild && node scripts/postprebuild.js",
+    "prebuild:clean": "expo prebuild --clean && node scripts/postprebuild.js"
   },
   "dependencies": {
-    "@cartridge/controller": "^0.12.1",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "expo": "~54.0.31",
-    "expo-auth-session": "^7.0.10",
     "expo-crypto": "^15.0.8",
     "expo-linking": "~8.0.11",
     "expo-status-bar": "~3.0.9",
@@ -20,11 +20,16 @@
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-get-random-values": "^2.0.0",
-    "starknet": "^9.2.1"
+    "starknet": "^9.2.1",
+    "uniffi-bindgen-react-native": "github:Larkooo/uniffi-bindgen-react-native#update-uniffi-0.30"
   },
   "devDependencies": {
+    "@babel/core": "^7.25.2",
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "private": true
 }
